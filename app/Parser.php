@@ -43,6 +43,7 @@ class Parser implements Iterator
         }
         $this->headers = $data;
         $this->loadFile($fileHandle);
+        fclose($fileHandle);
         $this->position = 0;
         if (empty($mapping = file_get_contents($mappingPath))) {
             throw new Exception('Failed to get mapping');
@@ -56,15 +57,30 @@ class Parser implements Iterator
     /**
      * @param resource $handle
      */
-    private function loadFile($handle)
+    private function loadFile($handle): void
     {
         while (false !== ($line = fgetcsv($handle))) {
             $data = array_map('trim', $line);
             if (empty($data)) {
                 continue;
             }
-            $this->file[] = $data;
+            $this->file[] = $this->getPreparedArray($data);
         }
+    }
+
+    private function getPreparedArray(array $data): array
+    {
+        $preparedData = [];
+        foreach ($this->headers as $id => $column) {
+            $preparedData['{' . $column . '}'] = empty($data[$id])
+                ? ''
+                : $data[$id];
+        }
+        $resultData = [];
+        foreach ($this->mapping as $key => $value) {
+            $resultData[$key] = str_replace(array_keys($preparedData), array_values($preparedData), $value);
+        }
+        return $resultData;
     }
 
     public function current()
