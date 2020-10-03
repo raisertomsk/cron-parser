@@ -1,0 +1,7 @@
+{
+    "user_id": "{Identifier}",
+    "first_name": "{Name}",
+    "last_name": "{Last name}",
+    "card_number": "{Card}",
+    "email": "{email}"
+}
